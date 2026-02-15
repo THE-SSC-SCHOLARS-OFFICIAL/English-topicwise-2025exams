@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>THE SSC SCHOLARS OFFICIAL - MOCKS ARENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,12 +15,12 @@
             --sky: #00d4ff; --err: #ff0033; --succ: #00ff66; 
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; border-radius: 0!important; }
-        body { background: var(--pitch-black); color: var(--text-white); min-height:100vh; overflow-x: hidden; }
+        body { background: var(--pitch-black); color: var(--text-white); min-height:100vh; overflow-x: hidden; position: fixed; width: 100%; height: 100%; }
         .static-nav { position: sticky; top: 0; width: 100%; height: 65px; background: #000; border-bottom: 2px solid var(--neon-yellow); display: flex; align-items: center; padding: 0 15px; z-index: 1000; }
         .nav-left { display: flex; gap: 8px; }
         .org-name { font-family: 'Orbitron'; font-size: 0.6rem; color: #666; letter-spacing: 1px; flex: 1; margin-left: 15px; }
         #test-header-name { font-family: 'Orbitron'; color: var(--neon-yellow); font-size: 0.85rem; margin-left: auto; text-align: right; }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; padding-bottom: 100px; overflow-y: auto; height: calc(100vh - 65px); }
         .screen { display: none; } .active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
         .section-title { font-family: 'Orbitron'; font-size: 0.9rem; margin: 25px 0 15px; color: var(--neon-yellow); border-left: 4px solid var(--neon-yellow); padding-left: 10px; }
@@ -26,15 +29,16 @@
         .menu-card:hover { border-color: var(--neon-yellow); background: #151515; }
         .menu-card h3 { font-family: 'Orbitron'; font-size: 0.75rem; color: #fff; text-transform: uppercase; }
         .menu-card p { font-size: 0.65rem; color: #666; margin-top: 5px; }
-        .mock-wrapper { display: flex; flex-direction: column; height: calc(100vh - 125px); }
-        .question-area { flex: 1; padding: 25px; overflow-y: auto; background: #050505; }
+        .mock-wrapper { display: flex; flex-direction: column; height: calc(100vh - 130px); position: relative; }
+        .question-area { flex: 1; padding: 25px; overflow-y: auto; background: #050505; -webkit-overflow-scrolling: touch; }
         .instruction-box { background: #1a1a1a; padding: 10px 15px; border-left: 3px solid var(--sky); font-size: 0.85rem; color: var(--sky); margin-bottom: 15px; font-style: italic; }
         .main-question { font-size: 1.1rem; line-height: 1.6; font-weight: 600; margin-bottom: 25px; color: #eee; }
         .exam-badge { border: 1px solid #333; color: #888; padding: 3px 8px; font-size: 0.6rem; font-family: 'Orbitron'; margin-bottom: 15px; display: inline-block; }
         .opt-btn { display: block; width: 100%; padding: 16px; margin: 12px 0; background: #0d0d0d; border: 1px solid #222; color: #ccc; text-align: left; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
         .opt-btn.selected { background: var(--neon-yellow); color: #000; font-weight: bold; border-color: var(--neon-yellow); }
-        .palette-container { padding: 15px; background: #000; border-top: 1px solid #222; }
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 250px; margin: 0 auto; }
+        .palette-container { padding: 15px; background: #000; border-top: 1px solid #222; max-height: 50vh; overflow-y: auto; transition: all 0.3s ease; }
+        .palette-container.hidden { max-height: 0; padding: 0; border: none; overflow: hidden; }
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 100%; margin: 0 auto; }
         .p-num { height: 35px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; font-family: 'Orbitron'; }
         .p-num.answered { background: var(--succ); color: #000; border: none; }
         .p-num.visited { background: var(--err); color: #fff; border: none; }
@@ -48,7 +52,19 @@
         #timer { color: var(--err); font-family: 'Orbitron'; font-weight: bold; font-size: 1rem; margin-left: 15px; }
         .star-icon { font-size: 1.5rem; cursor: pointer; color: #333; }
         .star-icon.active { color: var(--neon-yellow); }
-        @media (min-width: 768px) { .mock-wrapper { flex-direction: row; } .palette-container { width: 300px; border-left: 1px solid #222; border-top: none; } .palette-grid { grid-template-columns: repeat(5, 1fr); max-width: none; } }
+        .toggle-palette-btn { position: absolute; top: -40px; right: 10px; background: var(--neon-yellow); color: #000; border: none; padding: 8px 15px; cursor: pointer; font-family: 'Orbitron'; font-size: 0.65rem; font-weight: 700; z-index: 100; }
+        @media (min-width: 768px) { 
+            .mock-wrapper { flex-direction: row; } 
+            .palette-container { width: 300px; border-left: 1px solid #222; border-top: none; max-height: none; }
+            .palette-container.hidden { width: 0; padding: 0; border: none; }
+            .palette-grid { grid-template-columns: repeat(5, 1fr); max-width: none; } 
+            .toggle-palette-btn { right: 320px; }
+        }
+        @media (max-width: 767px) {
+            body { height: 100dvh; }
+            .mock-wrapper { height: calc(100dvh - 130px); }
+            .container { height: calc(100dvh - 65px); }
+        }
     </style>
 </head>
 <body onload="app.init()">
@@ -92,6 +108,7 @@
     </section>
 
     <section id="screen-test" class="screen">
+        <button class="toggle-palette-btn" id="toggle-palette-btn" onclick="app.togglePalette()">HIDE PALETTE</button>
         <div class="mock-wrapper">
             <div class="question-area">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -103,7 +120,7 @@
                 <div id="q-text" class="main-question"></div>
                 <div id="options-area"></div>
             </div>
-            <div class="palette-container"><div id="palette" class="palette-grid"></div></div>
+            <div class="palette-container" id="palette-container"><div id="palette" class="palette-grid"></div></div>
         </div>
         <div class="footer">
             <button class="btn-cyber" onclick="app.prev()">PREV</button>
@@ -124,7 +141,7 @@
 
 <script>
     const TOPICS = ["Spot the Error", "Sentence Improvement", "Narration", "Voice", "Parajumble", "Cloze Test", "One Word Substitution", "Idioms", "Synonyms", "Antonyms", "Spellings", "Homonyms", "Miscellaneous"];
-
+    
     const RAW_DATA = { 
         "Spot the Error": `
 Q.1 Neither the students nor the teacher (1)/ were ready for the sudden fire drill, (2)/ leading to a moment of confusion (3)/ before everyone evacuated. (4)
@@ -16796,19 +16813,26 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
         lastStats: { score: 0, r: 0, w: 0, s: 0 },
         blunders: JSON.parse(localStorage.getItem('ssc_blunders') || '{}'),
         savedItems: JSON.parse(localStorage.getItem('ssc_saved') || '{}'),
-        viewMode: 'normal', // Track if viewing blunders or saved items
+        viewMode: 'normal',
+        paletteVisible: true,
 
         init() {
             const grid = document.getElementById('english-topics-grid');
             grid.innerHTML = TOPICS.map(t => `<div class="menu-card" onclick="app.showSets('${t}')"><h3>${t}</h3></div>`).join('');
             this.updateAuxGrids();
+            
+            // Load palette preference
+            const savedPref = localStorage.getItem('palette_visible');
+            if(savedPref !== null) {
+                this.paletteVisible = savedPref === 'true';
+            }
         },
 
         showTopics(sub) { if(sub === 'English') document.getElementById('english-topics-area').style.display = 'block'; },
 
         showSets(cat) {
             this.currentCat = cat;
-            this.viewMode = 'normal'; // Reset view mode
+            this.viewMode = 'normal';
             const allQs = this.parseData(RAW_DATA[cat] || "");
             this.hideScreens();
             document.getElementById('screen-sets').classList.add('active');
@@ -16849,11 +16873,40 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
         startTest(qs, num) {
             this.questions = qs; this.currentSetNum = num; this.userAns = {}; this.visited = new Set([0]); this.bookmarks = new Set();
             this.currentIdx = 0; this.timer = 900; this.hideScreens();
-            this.viewMode = 'normal'; // Reset view mode when starting test
+            this.viewMode = 'normal';
             document.getElementById('screen-test').classList.add('active');
             document.getElementById('timer').style.display = 'block';
             document.getElementById('test-header-name').innerText = `${this.currentCat} - SET ${num}`;
+            
+            // Apply saved palette preference
+            const paletteContainer = document.getElementById('palette-container');
+            const toggleBtn = document.getElementById('toggle-palette-btn');
+            if(!this.paletteVisible) {
+                paletteContainer.classList.add('hidden');
+                toggleBtn.innerText = 'SHOW PALETTE';
+            } else {
+                paletteContainer.classList.remove('hidden');
+                toggleBtn.innerText = 'HIDE PALETTE';
+            }
+            
             this.renderQuestion(); this.startTimer();
+        },
+
+        togglePalette() {
+            this.paletteVisible = !this.paletteVisible;
+            const paletteContainer = document.getElementById('palette-container');
+            const toggleBtn = document.getElementById('toggle-palette-btn');
+            
+            if(this.paletteVisible) {
+                paletteContainer.classList.remove('hidden');
+                toggleBtn.innerText = 'HIDE PALETTE';
+            } else {
+                paletteContainer.classList.add('hidden');
+                toggleBtn.innerText = 'SHOW PALETTE';
+            }
+            
+            // Save preference
+            localStorage.setItem('palette_visible', this.paletteVisible);
         },
 
         renderQuestion() {
@@ -16903,7 +16956,7 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
                 html += `<div class="sol-box"><div style="font-weight:bold; margin-bottom:10px">Q.${i+1} ${q.q}</div>${q.options.map((o, idx) => `<div style="color:${idx===q.correct?'var(--succ)':(idx===u?'var(--err)':'#666')}">${String.fromCharCode(65+idx)}. ${o}</div>`).join('')}<div style="margin-top:10px; font-size:0.85rem; border-top:1px solid #222; padding-top:10px"><b>EXP:</b> ${q.exp}</div></div>`;
             });
             this.lastStats = { score: (r * 2) - (w * 0.5), r, w, s };
-            this.viewMode = 'normal'; // Normal test mode
+            this.viewMode = 'normal';
             document.getElementById('analysis-header-area').innerHTML = `<div class="score-box"><h2 style="font-family:'Orbitron'; color:var(--neon-yellow); font-size:0.8rem">FINAL SCORE</h2><h1 style="font-size:3.5rem">${this.lastStats.score.toFixed(2)}</h1><div style="display:flex; justify-content:space-around; margin-top:15px; font-family:'Orbitron'; font-size:0.7rem"><span style="color:var(--succ)">RIGHT: ${r}</span> <span style="color:var(--err)">WRONG: ${w}</span> <span style="color:var(--sky)">UA: ${s}</span></div></div>`;
             document.getElementById('analysis-list').innerHTML = html;
             localStorage.setItem('ssc_blunders', JSON.stringify(this.blunders));
@@ -16915,7 +16968,6 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
             let reportType = 'EXAM PERFORMANCE REPORT';
             let topicLabel = this.currentCat.toUpperCase();
             
-            // Check view mode to determine report type
             if(this.viewMode === 'blunders') {
                 reportType = 'BLUNDERS REVIEW REPORT';
                 topicLabel = `${this.currentCat.toUpperCase()} - BLUNDERS`;
@@ -16926,7 +16978,6 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
             
             let html = `<div style="background:#fff; color:#000; padding:20px; font-family:'Inter', sans-serif;"><div style="border-bottom:3px solid #000; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;"><div><h1 style="margin:0; font-family:'Orbitron'; font-size:22px; color:#000;">THE SSC SCHOLARS OFFICIAL</h1><p style="margin:2px 0; font-size:12px; font-weight:bold; color:#444;">${reportType} | 2026</p></div><div style="text-align:right; font-size:10px; color:#666;"><b>DATE:</b> ${time}<br><b>TOPIC:</b> ${topicLabel}</div></div>`;
             
-            // Only show marks section for normal tests, not for blunders/saved
             if(this.viewMode === 'normal') {
                 html += `<div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:20px;"><div style="border:1px solid #000; padding:10px; text-align:center;"><b>MARKS: ${this.lastStats.score.toFixed(2)}</b></div><div style="border:1px solid #000; padding:10px; text-align:center; background:#e8f5e9;">RIGHT: ${this.lastStats.r}</div><div style="border:1px solid #000; padding:10px; text-align:center; background:#ffebee;">WRONG: ${this.lastStats.w}</div><div style="border:1px solid #000; padding:10px; text-align:center; background:#f5f5f5;">UA: ${this.lastStats.s}</div></div>`;
             } else {
@@ -16939,16 +16990,56 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
                 const u = this.userAns[i]; const isCorrect = u === q.correct;
                 const statusColor = u === undefined ? '#9e9e9e' : (isCorrect ? '#2e7d32' : '#c62828');
                 
-                // For blunders and saved, don't show status (they're for reference)
                 let statusText = '';
                 if(this.viewMode === 'normal') {
                     statusText = `<span style="font-size:9px; color:${statusColor};">${u === undefined ? 'UA' : (isCorrect ? 'CORRECT' : 'INCORRECT')}</span>`;
                 }
                 
-                html += `<div style="border:1px solid #eee; padding:10px; page-break-inside:avoid; border-left:4px solid ${this.viewMode === 'normal' ? statusColor : '#2e7d32'};"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span><b>Q.${i+1}</b> [${q.exam || 'SSC'}]</span>${statusText}</div><div style="font-size:12px; margin-bottom:8px;">${q.q}</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:11px;"><div>A. ${q.options[0]}</div><div>B. ${q.options[1]}</div><div>C. ${q.options[2]}</div><div>D. ${q.options[3]}</div></div><div style="font-size:10px; padding:6px; background:#f9f9f9; border:1px solid #ddd; margin-top:5px;"><b>ANS: ${String.fromCharCode(65+q.correct)}</b><br>EXP: ${q.exp}</div></div>`;
+                // Generate options with highlighting for user's response
+                let optionsHtml = '';
+                for(let idx = 0; idx < 4; idx++) {
+                    const isUserAns = u === idx;
+                    const isCorrectAns = idx === q.correct;
+                    let optionStyle = 'font-size:11px;';
+                    
+                    if(this.viewMode === 'normal' && isUserAns && !isCorrectAns) {
+                        // User's wrong answer - highlight in red with bold
+                        optionStyle += 'background:#ffebee; padding:4px; font-weight:bold; border-left:3px solid #c62828;';
+                    } else if(isCorrectAns) {
+                        // Correct answer - highlight in green with bold
+                        optionStyle += 'background:#e8f5e9; padding:4px; font-weight:bold; border-left:3px solid #2e7d32;';
+                    } else if(this.viewMode === 'normal' && isUserAns && isCorrectAns) {
+                        // User's correct answer - highlight in green with bold
+                        optionStyle += 'background:#e8f5e9; padding:4px; font-weight:bold; border-left:3px solid #2e7d32;';
+                    }
+                    
+                    optionsHtml += `<div style="${optionStyle}">${String.fromCharCode(65+idx)}. ${q.options[idx]}</div>`;
+                }
+                
+                html += `<div class="question-box" style="border:1px solid #eee; padding:10px; page-break-inside:avoid; border-left:4px solid ${this.viewMode === 'normal' ? statusColor : '#2e7d32'};"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-size:13px; color:#666; font-weight:bold;">[${q.exam || 'SSC EXAM'}]</span>${statusText}</div><div style="font-size:13px; margin-bottom:10px; font-weight:bold;"><b style="font-size:14px;">Q.${i+1}</b> ${q.q}</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">${optionsHtml}</div><div style="font-size:10px; padding:6px; background:#f9f9f9; border:1px solid #ddd; margin-top:5px;"><b>CORRECT ANS: ${String.fromCharCode(65+q.correct)}</b>${this.viewMode === 'normal' && u !== undefined ? ` | <b>YOUR ANS: ${String.fromCharCode(65+u)}</b>` : ''}<br>EXP: ${q.exp}</div></div>`;
             });
             html += `</div><div style="text-align:center; margin-top:40px; border-top:2px solid #000; padding-top:15px;"><p>JOIN OUR OFFICIAL TELEGRAM CHANNEL</p><a href="https://t.me/thesscscholarsofficial" style="color:#0088cc; text-decoration:none; font-weight:bold;">t.me/thesscscholarsofficial</a><p>© 2026 THE SSC SCHOLARS OFFICIAL</p></div></div>`;
-            const original = document.body.innerHTML; document.body.innerHTML = html; window.print(); document.body.innerHTML = original; location.reload(); 
+            
+            // Create full HTML document for printing
+            const fullHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Response Sheet - ${this.currentCat}</title><style>
+                @media print {
+                    body { margin: 0; padding: 15px; }
+                    .question-box { page-break-inside: avoid; break-inside: avoid; }
+                    @page { margin: 1cm; size: A4; }
+                }
+                body { background: white; }
+            </style></head><body>${html}</body></html>`;
+            
+            // Open in new window for printing
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(fullHTML);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Wait for content to load then print
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         },
 
         updateAuxGrids() {
@@ -16969,7 +17060,7 @@ Exam: SSC CGL 2026 ebp`, "Miscellaneous": ``
 
         viewSpecial(cat, type) {
             this.currentCat = cat; 
-            this.viewMode = type; // Set view mode to 'blunders' or 'saved'
+            this.viewMode = type;
             const specialQs = type === 'blunders' ? this.blunders[cat] : this.savedItems[cat];
             if(!specialQs || specialQs.length === 0) return;
             this.questions = specialQs; this.userAns = {}; this.hideScreens();
